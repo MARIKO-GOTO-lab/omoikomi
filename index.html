@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{color-scheme:light}
+  body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>思い込み発見</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#FBF8F1;        /* 古い菓子缶のクリーム */
+    --card:#FFFDF8;
+    --ink:#23282B;
+    --ink-soft:#5A6266;
+    --ink-faint:#8C9499;
+    --rule:#E3DCCD;
+    --accent:#2E6B5E;       /* 巻末ページと同じ深緑 */
+    --accent-soft:#E7F0ED;
+    --pencil:#3B5BA5;       /* 青い色鉛筆 */
+    --shadow:0 1px 2px rgba(35,40,43,.05), 0 8px 24px rgba(35,40,43,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16191B; --card:#1E2225; --ink:#ECE7DC; --ink-soft:#AEB5B8;
+      --ink-faint:#7C8488; --rule:#33383B; --accent:#6FB3A2; --accent-soft:#1E2E2A;
+      --pencil:#8FB0E8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#16191B; --card:#1E2225; --ink:#ECE7DC; --ink-soft:#AEB5B8;
+    --ink-faint:#7C8488; --rule:#33383B; --accent:#6FB3A2; --accent-soft:#1E2E2A;
+    --pencil:#8FB0E8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    line-height:1.85; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:33rem; margin:0 auto; padding:0 1.25rem 4rem}
+
+  /* ---------- 見出し ---------- */
+  header{padding:2.25rem 0 1.5rem; text-align:center}
+  .eyebrow{
+    font-size:.7rem; letter-spacing:.22em; color:var(--accent);
+    font-weight:700; margin:0 0 .85rem;
+  }
+  h1{
+    font-family:"Shippori Mincho",serif; font-weight:600;
+    font-size:clamp(1.5rem,6.2vw,1.95rem); line-height:1.5;
+    margin:0 0 .7rem; text-wrap:balance; letter-spacing:.01em;
+  }
+  .lede{
+    margin:0 auto; max-width:26rem; color:var(--ink-soft);
+    font-size:.895rem; line-height:1.9; text-wrap:pretty;
+  }
+
+  /* ---------- 進み具合 ---------- */
+  .meter{
+    position:sticky; top:0; z-index:5; background:var(--paper);
+    padding:.7rem 0 .8rem; margin-bottom:.35rem;
+  }
+  .meter-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    font-size:.72rem; color:var(--ink-faint); letter-spacing:.06em;
+    margin-bottom:.45rem;
+  }
+  .meter-row b{color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums}
+  .track{height:3px; background:var(--rule); border-radius:2px; overflow:hidden}
+  .fill{height:100%; width:0; background:var(--accent); border-radius:2px; transition:width .35s ease}
+
+  /* ---------- 設問 ---------- */
+  .q{
+    background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    padding:1.4rem 1.25rem 1.1rem; margin-bottom:.85rem; box-shadow:var(--shadow);
+  }
+  .q-no{
+    font-size:.68rem; letter-spacing:.16em; color:var(--ink-faint);
+    font-weight:700; display:block; margin-bottom:.5rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .q-text{
+    font-family:"Shippori Mincho",serif; font-size:1.06rem; line-height:1.75;
+    margin:0 0 1.05rem; text-wrap:pretty;
+  }
+  .opts{display:grid; grid-template-columns:repeat(2,1fr); gap:.5rem}
+  .opt{
+    appearance:none; -webkit-appearance:none;
+    font:inherit; font-size:.83rem; color:var(--ink-soft);
+    background:transparent; border:1px solid var(--rule); border-radius:9px;
+    padding:.62rem .4rem; cursor:pointer; text-align:center;
+    transition:background .14s, border-color .14s, color .14s;
+  }
+  .opt:hover{border-color:var(--accent); color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .opt[aria-pressed="true"]{
+    background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500;
+  }
+
+  /* ---------- 結果 ---------- */
+  .result-head{padding:2.5rem 0 1.25rem; text-align:center}
+  .result-head h2{
+    font-family:"Shippori Mincho",serif; font-weight:600;
+    font-size:1.5rem; margin:0 0 .55rem; line-height:1.55;
+  }
+  .result-head p{margin:0; color:var(--ink-soft); font-size:.865rem}
+
+  .find{
+    background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    padding:1.5rem 1.3rem; margin-bottom:1rem; box-shadow:var(--shadow);
+  }
+  .find-rank{
+    display:inline-block; font-size:.66rem; letter-spacing:.16em; font-weight:700;
+    color:var(--accent); background:var(--accent-soft);
+    padding:.24rem .6rem; border-radius:99px; margin-bottom:.8rem;
+  }
+  .find h3{
+    font-family:"Shippori Mincho",serif; font-weight:600; font-size:1.18rem;
+    margin:0 0 .6rem; line-height:1.6;
+  }
+  .find-desc{margin:0 0 1.15rem; font-size:.895rem; color:var(--ink-soft); text-wrap:pretty}
+
+  .scene{
+    border-left:2px solid var(--rule); padding:.15rem 0 .15rem .95rem;
+    margin:0 0 1.15rem;
+  }
+  .scene-label{
+    font-size:.66rem; letter-spacing:.14em; color:var(--ink-faint);
+    font-weight:700; display:block; margin-bottom:.45rem;
+  }
+  .said{margin:0 0 .5rem; font-size:.88rem; line-height:1.8}
+  .said:last-child{margin-bottom:0}
+  .who{
+    font-size:.72rem; color:var(--ink-faint); letter-spacing:.06em;
+    margin-right:.4rem;
+  }
+  .said.yui em{font-style:normal; color:var(--ink-soft)}
+  .said.misaki em{
+    font-style:normal; color:var(--pencil); font-weight:500;
+  }
+
+  .step{
+    background:var(--accent-soft); border-radius:10px; padding:.9rem 1rem;
+  }
+  .step-label{
+    font-size:.66rem; letter-spacing:.14em; color:var(--accent);
+    font-weight:700; display:block; margin-bottom:.35rem;
+  }
+  .step p{margin:0; font-size:.875rem; line-height:1.8}
+
+  /* ---------- 全軸の並び ---------- */
+  .all{
+    background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    padding:1.35rem 1.3rem; margin-bottom:1.25rem; box-shadow:var(--shadow);
+  }
+  .all h3{
+    font-family:"Shippori Mincho",serif; font-weight:600; font-size:1rem;
+    margin:0 0 1rem;
+  }
+  .bar-row{display:grid; grid-template-columns:7.5rem 1fr 1.6rem; align-items:center; gap:.6rem; margin-bottom:.6rem}
+  .bar-row:last-child{margin-bottom:0}
+  .bar-name{font-size:.79rem; color:var(--ink-soft)}
+  .bar-track{height:6px; background:var(--rule); border-radius:3px; overflow:hidden}
+  .bar-fill{height:100%; background:var(--accent); border-radius:3px}
+  .bar-fill.dim{background:var(--rule)}
+  .bar-num{
+    font-size:.74rem; color:var(--ink-faint); text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- 締め ---------- */
+  .closing{
+    text-align:center; padding:1.9rem 1.3rem; border:1px solid var(--rule);
+    border-radius:14px; background:var(--card); box-shadow:var(--shadow);
+  }
+  .closing-title{
+    font-family:"Shippori Mincho",serif; font-weight:600; font-size:1.18rem;
+    margin:0 0 .9rem; line-height:1.6; color:var(--ink);
+  }
+  .closing p{margin:0 0 1.05rem; font-size:.9rem; color:var(--ink-soft); text-wrap:pretty}
+  .closing p:last-of-type{margin-bottom:1.4rem}
+  .closing-note{
+    font-size:.76rem !important; color:var(--ink-faint) !important;
+    margin:1rem 0 0 !important;
+  }
+  .cta{
+    display:inline-block; background:var(--accent); color:#fff;
+    text-decoration:none; font-weight:700; font-size:.92rem;
+    padding:.85rem 1.9rem; border-radius:99px;
+    transition:opacity .15s;
+  }
+  .cta:hover{opacity:.88}
+  .cta:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+  .again{
+    display:block; margin:1.5rem auto 0; background:none; border:none;
+    font:inherit; font-size:.8rem; color:var(--ink-faint);
+    text-decoration:underline; text-underline-offset:3px; cursor:pointer;
+  }
+  .again:hover{color:var(--ink-soft)}
+
+  footer{
+    margin-top:2.5rem; padding-top:1.4rem; border-top:1px solid var(--rule);
+    text-align:center; font-size:.73rem; color:var(--ink-faint); line-height:1.9;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important; scroll-behavior:auto !important}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">思い込み発見</p>
+    <h1>止めているのは、<br>思い込みかもしれません</h1>
+    <p class="lede">
+      14の問いに、思いつくまま答えてください。<br>
+      正解はありません。あてはまるものを選ぶだけです。
+    </p>
+  </header>
+
+  <div class="meter" id="meter">
+    <div class="meter-row"><span>答えた数</span><span><b id="done">0</b> / 14</span></div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+  </div>
+
+  <main id="quiz"></main>
+  <section id="result" hidden></section>
+
+  <footer>
+    漫画「10年後の私から、最後のメッセージが届いた」より<br>
+    結衣と美咲の会話から、7つの思い込みを取り出しています
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var AXES = [
+    {
+      key:"age", name:"今さら",
+      title:"「今さら始めても」という思い込み",
+      desc:"始めるのに遅い早いがある、と決めている状態です。年齢や経歴を、やらない理由に使ってしまいます。",
+      yui:"今も好き でも三十九だし／今さら始めてもって",
+      misaki:"私 布小物を始めたの去年だよ。まだ失敗ばっかり",
+      step:"「いつから始めたか」を人に聞いてみてください。思ったより最近だった、ということがよくあります。"
+    },
+    {
+      key:"tool", name:"道具から",
+      title:"「ちゃんとした道具から」という思い込み",
+      desc:"準備が整ってから始めたい、という気持ちです。準備そのものが、始めない時間になっていきます。",
+      yui:"ちゃんとした物ならって／買えば やめずに済むかな",
+      misaki:"それは違うと思う。高いの買った月ほど 縫わなかった",
+      step:"いま家にあるもので、5分だけやってみてください。買うのはそのあとで決めれば間に合います。"
+    },
+    {
+      key:"allbad", name:"全部だめ",
+      title:"「ひとつ だめなら全部だめ」という思い込み",
+      desc:"うまくいかない一点が目に入ると、全体まで否定してしまう見方です。できている所は数に入りません。",
+      yui:"左右の耳の大きさ（が気になる）／全部だめって思ってた",
+      misaki:"私は その眠そうな目が好き。同じ猫だってわかる いいじゃん",
+      step:"自分の作ったものから、よい所を1つだけ声に出してみてください。直す所は、そのあとです。"
+    },
+    {
+      key:"quota", name:"ノルマ",
+      title:"「これくらいの量は必要」という思い込み",
+      desc:"誰にも言われていない基準を、自分で決めて自分を縛っている状態です。数字の出どころは、たいてい不明です。",
+      yui:"じゃあ 十枚くらい仕上げなきゃ／十枚って 私 どこで聞いたんだろう",
+      misaki:"十枚も必要？ 誰かに 言われた？／私も 十個作らなきゃって思ってた。勝手に決めてた",
+      step:"その数字を「誰に言われたか」思い出してみてください。誰でもなければ、1つに減らして構いません。"
+    },
+    {
+      key:"audience", name:"見せる相手",
+      title:"「上手くなってから、大勢に」という思い込み",
+      desc:"見せる相手を増やすほど、怖さも増えます。人数が、始められない理由に変わっていきます。",
+      yui:"上手な人しか出せないのかな／見せるのは 怖いけど",
+      misaki:"初めての人も歓迎だって／大勢に見せると 怖くて出せなくなるよ",
+      step:"見せる相手を、まず1人だけ決めてください。その1人に見せたら、もう発表したことになります。"
+    },
+    {
+      key:"catchup", name:"取り戻す",
+      title:"「休んだ分は取り戻す」という思い込み",
+      desc:"空いた日を借金のように数えてしまう状態です。返そうとするほど、次の日が重くなります。",
+      yui:"三日分 取り戻さなきゃって／……借金みたいになるんだ",
+      misaki:"取り戻すと 次の日もっとしんどいよ。しんどいのは 始めるとこだけだから",
+      step:"空いた日は数えずに、今日の分だけやってください。しんどいのは、始めるところだけです。"
+    },
+    {
+      key:"tidy", name:"しまう",
+      title:"「使ったら、きちんとしまう」という思い込み",
+      desc:"片づけた道具は、次に出すまでが遠くなります。しまったつもりが、十年しまったままになることがあります。",
+      yui:"片づけないで 寝よう／私も 缶にしまってた",
+      misaki:"もったいないくらいが ちょうどいいの／十年 しまってたのに",
+      step:"道具を1つだけ、出しっぱなしにして寝てみてください。明日のあなたが、始めやすくなります。"
+    }
+  ];
+
+  // 設問。axis は AXES の key。
+  var QUESTIONS = [
+    {axis:"age",      text:"新しいことを始めようとすると、「いい歳をして」という声が頭に浮かぶ"},
+    {axis:"tool",     text:"始める前に、道具や場所をきちんと整えておきたい"},
+    {axis:"allbad",   text:"うまくいかない点がひとつあると、全体がだめに思える"},
+    {axis:"quota",    text:"「最低でもこれくらいは」という量を、自分の中に持っている"},
+    {axis:"audience", text:"人に見せるのは、ある程度うまくなってからだと思う"},
+    {axis:"catchup",  text:"続けられなかった日があると、その分を取り返したくなる"},
+    {axis:"tidy",     text:"使い終わった道具は、きちんとしまわないと落ち着かない"},
+    {axis:"age",      text:"始めるなら、もっと若いうちにやるべきだったと思うことがある"},
+    {axis:"tool",     text:"間に合わせの道具でやっても、どうせ身につかない気がする"},
+    {axis:"allbad",   text:"自分の作ったものを見るとき、よくない所から先に目に入る"},
+    {axis:"quota",    text:"ある程度の数をこなしてからでないと、人に見せられない"},
+    {axis:"audience", text:"見てもらうなら、できるだけ多くの人に見てほしい"},
+    {axis:"catchup",  text:"気分が乗っている日は、行けるところまで進めておきたい"},
+    {axis:"tidy",     text:"作りかけのものが出したままなのは、気になってしまう"}
+  ];
+
+  var CHOICES = [
+    {label:"そう思う",       value:3},
+    {label:"すこし思う",     value:2},
+    {label:"あまり思わない", value:1},
+    {label:"思わない",       value:0}
+  ];
+
+  var STORE = "omoikomi.answers.v1";
+  var answers = new Array(QUESTIONS.length).fill(null);
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE) || "null");
+    if (Array.isArray(saved) && saved.length === QUESTIONS.length) answers = saved;
+  } catch (e) { /* 読めなくても、まっさらで始められる */ }
+
+  var quiz   = document.getElementById("quiz");
+  var result = document.getElementById("result");
+  var fill   = document.getElementById("fill");
+  var done   = document.getElementById("done");
+
+  function build(){
+    QUESTIONS.forEach(function(q, i){
+      var card = document.createElement("div");
+      card.className = "q";
+
+      var no = document.createElement("span");
+      no.className = "q-no";
+      no.textContent = "問 " + (i + 1);
+      card.appendChild(no);
+
+      var text = document.createElement("p");
+      text.className = "q-text";
+      text.textContent = q.text;
+      card.appendChild(text);
+
+      var opts = document.createElement("div");
+      opts.className = "opts";
+      opts.setAttribute("role", "group");
+      opts.setAttribute("aria-label", "問 " + (i + 1) + " の答え");
+
+      CHOICES.forEach(function(c){
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "opt";
+        b.textContent = c.label;
+        b.setAttribute("aria-pressed", answers[i] === c.value ? "true" : "false");
+        b.addEventListener("click", function(){
+          answers[i] = c.value;
+          Array.prototype.forEach.call(opts.children, function(sib){
+            sib.setAttribute("aria-pressed", sib === b ? "true" : "false");
+          });
+          save();
+          update();
+        });
+        opts.appendChild(b);
+      });
+
+      card.appendChild(opts);
+      quiz.appendChild(card);
+    });
+  }
+
+  function save(){
+    try { localStorage.setItem(STORE, JSON.stringify(answers)); } catch (e) {}
+  }
+
+  function answered(){
+    return answers.filter(function(a){ return a !== null; }).length;
+  }
+
+  function update(){
+    var n = answered();
+    done.textContent = n;
+    fill.style.width = (n / QUESTIONS.length * 100) + "%";
+    if (n === QUESTIONS.length) show();
+  }
+
+  function scores(){
+    var out = {};
+    AXES.forEach(function(a){ out[a.key] = 0; });
+    QUESTIONS.forEach(function(q, i){
+      if (answers[i] !== null) out[q.axis] += answers[i];
+    });
+    return out;
+  }
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function line(who, words, cls){
+    var p = el("p", "said " + cls);
+    p.appendChild(el("span", "who", who));
+    var em = el("em", null, "「" + words + "」");
+    p.appendChild(em);
+    return p;
+  }
+
+  function show(){
+    var s = scores();
+    var ranked = AXES.slice().sort(function(a, b){ return s[b.key] - s[a.key]; });
+    // 上位3つ。ただし0点のものは出さない（あてはまらないものを渡さない）
+    var top = ranked.filter(function(a){ return s[a.key] > 0; }).slice(0, 3);
+    if (!top.length) top = ranked.slice(0, 1);
+
+    result.textContent = "";
+
+    var head = el("div", "result-head");
+    head.appendChild(el("h2", null, "あなたを止めていそうな思い込み"));
+    head.appendChild(el("p", null, "強く出たものから順に、" + top.length + "つ出しています"));
+    result.appendChild(head);
+
+    top.forEach(function(a, i){
+      var card = el("div", "find");
+      card.appendChild(el("span", "find-rank", ["いちばん強い", "つぎに強い", "その次"][i] || "その他"));
+      card.appendChild(el("h3", null, a.title));
+      card.appendChild(el("p", "find-desc", a.desc));
+
+      var scene = el("div", "scene");
+      scene.appendChild(el("span", "scene-label", "本編のこの場面"));
+      scene.appendChild(line("結衣", a.yui, "yui"));
+      scene.appendChild(line("美咲", a.misaki, "misaki"));
+      card.appendChild(scene);
+
+      var step = el("div", "step");
+      step.appendChild(el("span", "step-label", "今日できる、ひとつ"));
+      step.appendChild(el("p", null, a.step));
+      card.appendChild(step);
+
+      result.appendChild(card);
+    });
+
+    var all = el("div", "all");
+    all.appendChild(el("h3", null, "7つすべての出かた"));
+    ranked.forEach(function(a){
+      var row = el("div", "bar-row");
+      row.appendChild(el("span", "bar-name", a.name));
+      var track = el("div", "bar-track");
+      var bar = el("div", "bar-fill" + (top.indexOf(a) < 0 ? " dim" : ""));
+      bar.style.width = (s[a.key] / 6 * 100) + "%";
+      track.appendChild(bar);
+      row.appendChild(track);
+      row.appendChild(el("span", "bar-num", s[a.key] + "/6"));
+      all.appendChild(row);
+    });
+    result.appendChild(all);
+
+    var closing = el("div", "closing");
+    closing.appendChild(el("h3", "closing-title", "ひとつだけ、外してみませんか"));
+    closing.appendChild(el("p",  null,
+      "思い込みは、自分ひとりでは気づけません。" +
+      "結衣が気づけたのは、となりに美咲がいたからでした。"));
+    closing.appendChild(el("p",  null,
+      "ここに出てきた思い込みを、一緒にほどく無料相談をご用意しています。" +
+      "ほどけると気持ちが軽くなって、その笑顔は家族にも、まわりの人にも移っていきます。"));
+    var cta = el("a", "cta", "無料相談を申し込む");
+    // 巻末ページ（本）とは**別のURLを使う**。どちらから来た人かを
+    // 見分けるため。本の巻末は https://lin.ee/Ncu3nwKL、ここは診断からの導線。
+    cta.href = "https://lin.ee/SQGdU1P";
+    cta.target = "_blank";
+    cta.rel = "noopener";
+    closing.appendChild(cta);
+    closing.appendChild(el("p", "closing-note", "LINEのトークから、そのままお申し込みいただけます"));
+    result.appendChild(closing);
+
+    var again = el("button", "again", "もう一度はじめから答える");
+    again.type = "button";
+    again.addEventListener("click", function(){
+      answers = new Array(QUESTIONS.length).fill(null);
+      save();
+      quiz.textContent = "";
+      build();
+      result.hidden = true;
+      update();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+    result.appendChild(again);
+
+    result.hidden = false;
+    result.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  build();
+  update();
+})();
+</script>
+</body>
+</html>
